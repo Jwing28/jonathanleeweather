@@ -11,6 +11,7 @@ const Forecast = () => {
   const [selectedLocation, setSelectedLocation] = React.useState("");
   const [location, setLocation] = React.useState("");
   const [forecast, setForecast] = React.useState(undefined);
+  const [error, setError] = React.useState("");
 
   useEffect(() => {
     if (selectedLocation.length) {
@@ -21,18 +22,22 @@ const Forecast = () => {
           "+"
         )}`;
 
-        const locationResponse = await fetch(proxyurl + locationUrl);
-        const locationJSON = await locationResponse.json();
-        const { woeid } = locationJSON[0];
+        try {
+          const locationResponse = await fetch(proxyurl + locationUrl);
+          const locationJSON = await locationResponse.json();
+          const { woeid } = locationJSON[0];
 
-        const forecastUrl = `https://www.metaweather.com/api/location/${woeid}/`;
-        const forecastResponse = await fetch(proxyurl + forecastUrl);
-        const forecastJSON = await forecastResponse.json();
+          const forecastUrl = `https://www.metaweather.com/api/location/${woeid}/`;
+          const forecastResponse = await fetch(proxyurl + forecastUrl);
+          const forecastJSON = await forecastResponse.json();
 
-        const { title } = forecastJSON;
+          const { title } = forecastJSON;
 
-        setLocation(title);
-        setForecast(forecastJSON.consolidated_weather);
+          setLocation(title);
+          setForecast(forecastJSON.consolidated_weather);
+        } catch (e) {
+          setError("Location unavailable. Please try again.");
+        }
       })();
     }
   }, [selectedLocation]);
@@ -56,6 +61,7 @@ const Forecast = () => {
       ) : (
         <div>
           <LocationForm setLocation={setSelectedLocation} />
+          {!!error && <span>{error}</span>}
         </div>
       )}
     </>
